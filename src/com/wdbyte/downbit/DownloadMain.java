@@ -18,7 +18,7 @@ import java.util.zip.CRC32;
  * <p>
  * 多线程下载
  * 断点续传下载 demo
- * 
+ *
  * @author niujinpeng
  * @Date 2020/7/15 15:14
  */
@@ -88,10 +88,10 @@ public class DownloadMain {
 
     public boolean merge(String fileName) throws IOException {
         System.out.println("> 开始合并文件 " + fileName);
+        byte[] buffer = new byte[1024 * 10];
+        int len = -1;
         try (RandomAccessFile oSavedFile = new RandomAccessFile(fileName, "rw")) {
             for (int i = 0; i < DOWNLOAD_THREAD_NUM; i++) {
-                byte[] buffer = new byte[1024 * 10];
-                int len = -1;
                 try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName + FILE_TEMP_SUFFIX + i))) {
                     while ((len = bis.read(buffer)) != -1) { // 读到文件末尾则返回-1
                         oSavedFile.write(buffer, 0, len);

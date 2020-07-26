@@ -3,6 +3,8 @@ package com.wdbyte.downbit.util;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -35,6 +37,13 @@ public class HttpUtls {
         int contentLength = httpUrlConnection.getContentLength();
         httpUrlConnection.disconnect();
         return contentLength;
+    }
+
+    public static String getHttpFileEtag(String url) throws IOException {
+        HttpURLConnection httpUrlConnection = getHttpUrlConnection(url);
+        Map<String, List<String>> headerFields = httpUrlConnection.getHeaderFields();
+        List<String> eTagList = headerFields.get("ETag");
+        return eTagList.get(0);
     }
 
     public static String getHttpFileName(String url) {
