@@ -83,6 +83,7 @@ public class DownloadMain {
             // 清理分段文件
             clearTemp(fileName);
         }
+        System.out.println("> 本次文件下载结束");
         System.exit(0);
     }
 

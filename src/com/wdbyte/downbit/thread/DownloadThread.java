@@ -55,6 +55,7 @@ public class DownloadThread implements Callable<Boolean> {
             return true;
         }
         HttpURLConnection httpUrlConnection = HttpUtls.getHttpUrlConnection(url, startPos + localFileContentLength, endPos);
+
         // 获得输入流
         try (InputStream input = httpUrlConnection.getInputStream(); BufferedInputStream bis = new BufferedInputStream(input);
              RandomAccessFile oSavedFile = new RandomAccessFile(httpFileName, "rw")) {
