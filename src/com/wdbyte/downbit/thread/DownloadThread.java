@@ -52,6 +52,7 @@ public class DownloadThread implements Callable<Boolean> {
         Long localFileContentLength = FileUtils.getFileContentLength(httpFileName);
         if (localFileContentLength >= endPos - startPos) {
             System.out.println("> " + httpFileName + " 已经下载完毕，无需重复下载");
+            LogThread.DOWNLOAD_FINISH.addAndGet(1);
             return true;
         }
         HttpURLConnection httpUrlConnection = HttpUtls.getHttpUrlConnection(url, startPos + localFileContentLength, endPos);
