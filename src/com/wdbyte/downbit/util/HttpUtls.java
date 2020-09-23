@@ -6,6 +6,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.login.LoginContext;
+
 /**
  * <p>
  * 网络请求操作工具类
@@ -24,7 +26,7 @@ public class HttpUtls {
      */
     public static HttpURLConnection getHttpUrlConnection(String url) throws IOException {
         URL httpUrl = new URL(url);
-        HttpURLConnection httpConnection = (HttpURLConnection) httpUrl.openConnection();
+        HttpURLConnection httpConnection = (HttpURLConnection)httpUrl.openConnection();
         httpConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36");
         return httpConnection;
     }
@@ -40,10 +42,15 @@ public class HttpUtls {
      */
     public static HttpURLConnection getHttpUrlConnection(String url, long start, Long end) throws IOException {
         HttpURLConnection httpUrlConnection = getHttpUrlConnection(url);
+        LogUtils.debug("此线程下载内容区间 {}-{}", start, end);
         if (end != null) {
-            httpUrlConnection.setRequestProperty("RANGE", "bytes=" + start + "-" + end + "/*");
+            httpUrlConnection.setRequestProperty("RANGE", "bytes=" + start + "-" + end);
         } else {
             httpUrlConnection.setRequestProperty("RANGE", "bytes=" + start + "-");
+        }
+        Map<String, List<String>> headerFields = httpUrlConnection.getHeaderFields();
+        for (String s : headerFields.keySet()) {
+            LogUtils.debug("此线程相应头{}:{}", s, headerFields.get(s));
         }
         return httpUrlConnection;
     }

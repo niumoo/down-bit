@@ -1,9 +1,9 @@
 package com.wdbyte.downbit.thread;
 
-import com.wdbyte.downbit.DownloadMain;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+
+import com.wdbyte.downbit.DownloadMain;
 
 /**
  * <p>
@@ -33,7 +33,8 @@ public class LogThread implements Callable<Boolean> {
             size = downloadSize;
             double surplusTime = (httpFileContentLength - downloadSize) / 1024d / speed;
             Double fileSize = downloadSize / 1024d / 1024d;
-            String speedLog = "> 已经下载大小 " + String.format("%.2f", fileSize) + "mb,当前下载速度:" + speed.intValue() + "kb/s" + ",估计剩余时间:" + String.format("%.1f", surplusTime) + "s";
+            String speedLog = "> 已经下载大小 " + String.format("%.2f", fileSize) + "mb,当前下载速度:" + speed.intValue() + "kb/s"
+                + ",估计剩余时间:" + String.format("%.1f", surplusTime) + "s";
             for (int i = 0; i < logLength; i++) {
                 System.out.print("\b");
             }
