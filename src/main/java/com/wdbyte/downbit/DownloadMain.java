@@ -35,14 +35,18 @@ public class DownloadMain {
     // 下载线程数量
     public static int DOWNLOAD_THREAD_NUM = 5;
     // 下载线程池
-    private static ExecutorService executor = Executors.newFixedThreadPool(DOWNLOAD_THREAD_NUM+1);
+    private static ExecutorService executor = Executors.newFixedThreadPool(DOWNLOAD_THREAD_NUM + 1);
     // 临时文件后缀
     public static String FILE_TEMP_SUFFIX = ".temp";
 
     public static void main(String[] args) throws Exception {
         //LogUtils.DEBUG = true;
-        //String url = "http://wppkg.baidupcs.com/issue/netdisk/yunguanjia/BaiduYunGuanjia_7.0.1.1.exe";
-        String url = "thunder://QUFodHRwJTNBJTJGJTJGZG93bi5va2Rvd25sb2FkOC5jb20lMkYyMDIwMTIyNiUyRjg1NThfMDI4M2JiN2ElMkYlRTglQTclQTYlRTQlQjglOEQlRTUlODglQjAlRTclOUElODQlRTYlODElOEIlRTQlQkElQkFCRDIwMDYubXA0Wlo=";
+        if (args == null || args.length == 0) {
+            LogUtils.info("没有传入任何下载链接");
+            LogUtils.info("支持 http/thunder 链接");
+            return;
+        }
+        String url = args[0];
         url = ThunderUtils.toHttpUrl(url);
         DownloadMain fileDownload = new DownloadMain();
         fileDownload.download(url);
@@ -87,8 +91,8 @@ public class DownloadMain {
         for (Future<Boolean> booleanFuture : futureList) {
             booleanFuture.get();
         }
-        LogUtils.info("文件下载完毕 {}，本次下载耗时：", fileName, (System.currentTimeMillis() - startTime) / 1000 + "s");
-        LogUtils.info("结束下载时间 {}", LocalDateTime.now());
+        LogUtils.info("文件下载完毕 {}，本次下载耗时：{}", fileName, (System.currentTimeMillis() - startTime) / 1000 + "s");
+        LogUtils.info("结束下载时间 {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")));
         // 文件合并
         boolean merge = merge(fileName);
         if (merge) {
