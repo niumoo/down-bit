@@ -20,6 +20,7 @@ import com.wdbyte.downbit.thread.LogThread;
 import com.wdbyte.downbit.util.FileUtils;
 import com.wdbyte.downbit.util.HttpUtls;
 import com.wdbyte.downbit.util.LogUtils;
+import com.wdbyte.downbit.util.ThunderUtils;
 
 /**
  * <p>
@@ -34,13 +35,15 @@ public class DownloadMain {
     // 下载线程数量
     public static int DOWNLOAD_THREAD_NUM = 5;
     // 下载线程池
-    private static ExecutorService executor = Executors.newFixedThreadPool(DOWNLOAD_THREAD_NUM + 1);
+    private static ExecutorService executor = Executors.newFixedThreadPool(DOWNLOAD_THREAD_NUM+1);
     // 临时文件后缀
     public static String FILE_TEMP_SUFFIX = ".temp";
 
     public static void main(String[] args) throws Exception {
         //LogUtils.DEBUG = true;
-        String url = "http://wppkg.baidupcs.com/issue/netdisk/yunguanjia/BaiduYunGuanjia_7.0.1.1.exe";
+        //String url = "http://wppkg.baidupcs.com/issue/netdisk/yunguanjia/BaiduYunGuanjia_7.0.1.1.exe";
+        String url = "thunder://QUFodHRwJTNBJTJGJTJGZG93bi5va2Rvd25sb2FkOC5jb20lMkYyMDIwMTIyNiUyRjg1NThfMDI4M2JiN2ElMkYlRTglQTclQTYlRTQlQjglOEQlRTUlODglQjAlRTclOUElODQlRTYlODElOEIlRTQlQkElQkFCRDIwMDYubXA0Wlo=";
+        url = ThunderUtils.toHttpUrl(url);
         DownloadMain fileDownload = new DownloadMain();
         fileDownload.download(url);
     }
