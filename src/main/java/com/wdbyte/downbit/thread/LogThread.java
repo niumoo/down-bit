@@ -1,5 +1,6 @@
 package com.wdbyte.downbit.thread;
 
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -14,8 +15,9 @@ import com.wdbyte.downbit.DownloadMain;
  */
 public class LogThread implements Callable<Boolean> {
 
+    public static AtomicLong LOCAL_FINISH_SIZE = new AtomicLong();
     public static AtomicLong DOWNLOAD_SIZE = new AtomicLong();
-    public static AtomicLong DOWNLOAD_FINISH = new AtomicLong();
+    public static AtomicLong DOWNLOAD_FINISH_THREAD = new AtomicLong();
     private long httpFileContentLength;
 
     public LogThread(long httpFileContentLength) {
@@ -24,21 +26,32 @@ public class LogThread implements Callable<Boolean> {
 
     @Override
     public Boolean call() throws Exception {
+        int[] downSizeArr = new int[5];
+        int i = 0;
         double size = 0;
-        int logLength = 0;
-        while (DOWNLOAD_FINISH.get() != DownloadMain.DOWNLOAD_THREAD_NUM) {
+        double mb = 1024d * 1024d;
+        // 文件总大小
+        String httpFileSize = String.format("%.2f", httpFileContentLength / mb);
+        while (DOWNLOAD_FINISH_THREAD.get() != DownloadMain.DOWNLOAD_THREAD_NUM) {
             double downloadSize = DOWNLOAD_SIZE.get();
-            // 速度 = 大小/ 时间
-            Double speed = ((downloadSize - size) / 1024d) / 1d;
+            downSizeArr[++i % 5] = Double.valueOf(downloadSize - size).intValue();
             size = downloadSize;
-            double surplusTime = (httpFileContentLength - downloadSize) / 1024d / speed;
-            Double fileSize = downloadSize / 1024d / 1024d;
-            String speedLog = "> 已经下载大小 " + String.format("%.2f", fileSize) + "mb,当前下载速度:" + speed.intValue() + "kb/s"
-                + ",估计剩余时间:" + String.format("%.1f", surplusTime) + "s";
-            for (int i = 0; i < logLength; i++) {
-                System.out.print("\b");
+
+            // 每秒速度
+            double fiveSecDownloadSize = Arrays.stream(downSizeArr).sum();
+            int speed = (int)((fiveSecDownloadSize / 1024d) / (i < 5d ? i : 5d));
+
+            // 剩余时间
+            double surplusSize = httpFileContentLength - downloadSize - LOCAL_FINISH_SIZE.get();
+            String surplusTime = String.format("%.1f", surplusSize / 1024d / speed);
+            if (surplusTime.equals("Infinity")) {
+                surplusTime = "-";
             }
-            logLength = speedLog.length();
+
+            // 已下大小
+            String currentFileSize = String.format("%.2f", downloadSize / mb + LOCAL_FINISH_SIZE.get() / mb);
+            String speedLog = String.format("> 已下载 %smb/%smb,速度 %skb/s,剩余时间 %ss", currentFileSize, httpFileSize, speed, surplusTime);
+            System.out.print("\r");
             System.out.print(speedLog);
             Thread.sleep(1000);
         }

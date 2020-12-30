@@ -70,20 +70,7 @@ public class DownloadMain {
         LogUtils.info("开始下载时间 {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")));
         long startTime = System.currentTimeMillis();
         // 任务切分
-        long size = httpFileContentLength / DOWNLOAD_THREAD_NUM;
-        long lastSize = httpFileContentLength - (httpFileContentLength / DOWNLOAD_THREAD_NUM * (DOWNLOAD_THREAD_NUM
-            - 1));
-        for (int i = 0; i < DOWNLOAD_THREAD_NUM; i++) {
-            long start = i * size;
-            Long downloadWindow = (i == DOWNLOAD_THREAD_NUM - 1) ? lastSize : size;
-            Long end = start + downloadWindow;
-            if (start != 0) {
-                start++;
-            }
-            DownloadThread downloadThread = new DownloadThread(url, start, end, i, httpFileContentLength);
-            Future<Boolean> future = executor.submit(downloadThread);
-            futureList.add(future);
-        }
+        splitDownload(url,futureList);
         LogThread logThread = new LogThread(httpFileContentLength);
         Future<Boolean> future = executor.submit(logThread);
         futureList.add(future);
@@ -101,6 +88,32 @@ public class DownloadMain {
         }
         LogUtils.info("本次文件下载结束");
         System.exit(0);
+    }
+
+    /**
+     * 切分下载任务到多个线程
+     *
+     * @param url
+     * @param futureList
+     * @throws IOException
+     */
+    public void splitDownload(String url, List<Future<Boolean>> futureList) throws IOException {
+        long httpFileContentLength = HttpUtls.getHttpFileContentLength(url);
+        // 任务切分
+        long size = httpFileContentLength / DOWNLOAD_THREAD_NUM;
+        long lastSize = httpFileContentLength - (httpFileContentLength / DOWNLOAD_THREAD_NUM * (DOWNLOAD_THREAD_NUM
+            - 1));
+        for (int i = 0; i < DOWNLOAD_THREAD_NUM; i++) {
+            long start = i * size;
+            Long downloadWindow = (i == DOWNLOAD_THREAD_NUM - 1) ? lastSize : size;
+            Long end = start + downloadWindow;
+            if (start != 0) {
+                start++;
+            }
+            DownloadThread downloadThread = new DownloadThread(url, start, end, i, httpFileContentLength);
+            Future<Boolean> future = executor.submit(downloadThread);
+            futureList.add(future);
+        }
     }
 
     public boolean merge(String fileName) throws IOException {

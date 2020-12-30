@@ -68,9 +68,10 @@ public class DownloadThread implements Callable<Boolean> {
 
         // 本地文件大小
         Long localFileContentLength = FileUtils.getFileContentLength(httpFileName);
+        LogThread.LOCAL_FINISH_SIZE.addAndGet(localFileContentLength);
         if (localFileContentLength >= endPos - startPos) {
             LogUtils.info("{} 已经下载完毕，无需重复下载", httpFileName);
-            LogThread.DOWNLOAD_FINISH.addAndGet(1);
+            LogThread.DOWNLOAD_FINISH_THREAD.addAndGet(1);
             return true;
         }
         if (endPos.equals(contentLenth)) {
@@ -82,7 +83,6 @@ public class DownloadThread implements Callable<Boolean> {
         try (InputStream input = httpUrlConnection.getInputStream(); BufferedInputStream bis = new BufferedInputStream(input);
              RandomAccessFile oSavedFile = new RandomAccessFile(httpFileName, "rw")) {
             oSavedFile.seek(localFileContentLength);
-            LogThread.DOWNLOAD_SIZE.addAndGet(localFileContentLength);
             byte[] buffer = new byte[BYTE_SIZE];
             int len = -1;
             // 读到文件末尾则返回-1
@@ -99,7 +99,7 @@ public class DownloadThread implements Callable<Boolean> {
             return false;
         } finally {
             httpUrlConnection.disconnect();
-            LogThread.DOWNLOAD_FINISH.addAndGet(1);
+            LogThread.DOWNLOAD_FINISH_THREAD.addAndGet(1);
         }
         return true;
     }
