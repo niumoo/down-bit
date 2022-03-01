@@ -51,6 +51,7 @@ public class ThunderUtils {
         if (url.endsWith("ZZ")) {
             url = url.substring(0, url.length() - 2);
         }
+        LogUtils.info("当前链接是迅雷链接，转换结果:{}", url);
         return url;
     }
 }

@@ -9,6 +9,7 @@ import java.io.RandomAccessFile;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,17 +40,30 @@ public class DownloadMain {
     // 临时文件后缀
     public static String FILE_TEMP_SUFFIX = ".temp";
 
+    // 支持的 URL 协议
+    private static HashSet<String> PROTOCAL_SET = new HashSet();
+
+    static {
+        PROTOCAL_SET.add("thunder://");
+        PROTOCAL_SET.add("http://");
+        PROTOCAL_SET.add("https://");
+    }
+
     public static void main(String[] args) throws Exception {
         //LogUtils.DEBUG = true;
-        if (args == null || args.length == 0) {
+        if (args == null || args.length == 0 || args[0].trim().length() == 0) {
             LogUtils.info("没有传入任何下载链接");
-            LogUtils.info("支持 http/thunder 链接");
+            LogUtils.info("支持 http/https/thunder 链接");
             return;
         }
-        String url = args[0];
-        url = ThunderUtils.toHttpUrl(url);
-        DownloadMain fileDownload = new DownloadMain();
-        fileDownload.download(url);
+        final String url = args[0];
+        long count = PROTOCAL_SET.stream().filter(prefix -> url.startsWith(prefix)).count();
+        if (count == 0) {
+            LogUtils.info("不支持的协议类型");
+            return;
+        }
+        LogUtils.info("要下载的链接是:{}", url);
+        new DownloadMain().download(ThunderUtils.toHttpUrl(url));
     }
 
     public void download(String url) throws Exception {
@@ -70,7 +84,7 @@ public class DownloadMain {
         LogUtils.info("开始下载时间 {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")));
         long startTime = System.currentTimeMillis();
         // 任务切分
-        splitDownload(url,futureList);
+        splitDownload(url, futureList);
         LogThread logThread = new LogThread(httpFileContentLength);
         Future<Boolean> future = executor.submit(logThread);
         futureList.add(future);
@@ -101,8 +115,7 @@ public class DownloadMain {
         long httpFileContentLength = HttpUtls.getHttpFileContentLength(url);
         // 任务切分
         long size = httpFileContentLength / DOWNLOAD_THREAD_NUM;
-        long lastSize = httpFileContentLength - (httpFileContentLength / DOWNLOAD_THREAD_NUM * (DOWNLOAD_THREAD_NUM
-            - 1));
+        long lastSize = httpFileContentLength - (httpFileContentLength / DOWNLOAD_THREAD_NUM * (DOWNLOAD_THREAD_NUM - 1));
         for (int i = 0; i < DOWNLOAD_THREAD_NUM; i++) {
             long start = i * size;
             Long downloadWindow = (i == DOWNLOAD_THREAD_NUM - 1) ? lastSize : size;
